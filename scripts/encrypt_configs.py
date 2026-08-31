@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""
-configs.txt رو با AES-256-GCM رمز می‌کنه و خروجی رو configs.enc می‌سازه.
-کلید از متغیر محیطی AES_KEY_HEX خونده می‌شه (که در ورک‌فلو از GitHub Secret میاد)
-و هرگز داخل این فایل نوشته نمی‌شه.
-
-فرمت خروجی (باینری):
-  [12 بایت نانس] + [سایفرتکست + تگ GCM]
-همین فرمت دقیقاً توی اپ اندروید (AesConfigDecryptor.kt) دیکد می‌شه.
-"""
 import os
 import sys
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
