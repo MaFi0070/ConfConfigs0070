@@ -1,38 +1,46 @@
-name: Collect & Encrypt Configs
+name: Fetch NPV Group Configs
 
 on:
   schedule:
-    - cron: "*/20 * * * *"   
-  workflow_dispatch:         
+    - cron: "*/20 * * * *"  # هر 20 دقیقه (بر اساس UTC)
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  collect-and-encrypt:
+  fetch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install cryptography
+      - run: pip install telethon cryptography
 
+      # ── قدم ۱: جمع‌آوری کانفیگ‌ها (دقیقاً همون قبلی، بدون تغییر) ──
+      - name: Fetch configs from group
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          SESSION: ${{ secrets.SESSION }}
+        run: python fetch_configs.py
+
+      - name: Add timestamp (even if no change)
+        run: echo "# Updated at $(date)" >> configs.txt
+
+      # ── قدم ۲: رمزنگاری configs.txt -> configs.enc ──
       - name: Encrypt configs.txt
         env:
-          AES_KEY_HEX: ${{ secrets.CONFIGS_AES_KEY }}   
+          AES_KEY_HEX: ${{ secrets.CONFIGS_AES_KEY }}   # قدم ۳: کلید از GitHub Secret
         run: python scripts/encrypt_configs.py
 
-      
-      - name: Commit encrypted file only
+      # ── قدم ۴: فقط فایل رمزشده کامیت/پوش می‌شه ──
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add configs.enc
-          git rm --cached configs.txt --ignore-unmatch
-          git commit -m "chore: update encrypted configs [skip ci]" || echo "چیزی برای کامیت نیست"
-          git push
+          git commit -m "auto update encrypted configs" && git push || echo "چیزی برای کامیت نیست"
