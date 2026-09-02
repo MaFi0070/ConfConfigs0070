@@ -10,7 +10,7 @@ async def main():
     client = TelegramClient(StringSession(SESSION), API_ID, API_HASH)
     await client.connect()
     links = []
-    async for msg in client.iter_messages("napsternetv", limit=300):
+    async for msg in client.iter_messages("napsternetv", limit=700):
         if msg.text:
             links += re.findall(r"(?:vless|vmess|trojan|ss)://[^\s\"'<>]+", msg.text)
     unique = list(dict.fromkeys(links))
